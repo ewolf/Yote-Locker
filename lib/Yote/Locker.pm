@@ -6,6 +6,7 @@ use warnings;
 use Carp 'longmess';
 use Data::Dumper;
 use Fcntl qw( :flock );
+use File::Path qw(make_path);
 use Scalar::Util qw(openhandle);
 
 use vars qw($VERSION);
@@ -19,7 +20,7 @@ use constant {
 };
 
 sub new {
-    my ($pkg, $lockfile, $lockdir) = @_;
+    my ($pkg, $lockfile) = @_;
 
     # create the lock file if it does not exist. if it cannot
     # be locked, error out here
@@ -32,6 +33,7 @@ sub new {
     } else {
         $lock_fh = _open ($lockfile, '>' );
         unless ($lock_fh = _open ($lockfile, '>' )) {
+use Carp 'longmess'; print STDERR Data::Dumper->Dump([longmess]);
             die "cannot open, unable to open lock file '$lockfile' to open store: $! $@";
         }
         $lock_fh->autoflush(1);
@@ -87,6 +89,11 @@ sub unlock {
     undef $self->[LOCK_FH];
     $self->_log( "$$ unlocked" );
     1;
+}
+
+sub _make_path {
+    my( $dir, $err, $msg ) = @_;
+    make_path( $dir, { error => $err } );
 }
 
 sub _openhandle {
